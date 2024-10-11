@@ -7,10 +7,13 @@ import * as Yup from "yup";
 import { PageNumbers } from "../../interface/home";
 import { IRequisitionDetails } from "../../interface/forms";
 import { genderOptions, urgencyOptions } from "./constants";
+import { useData } from "./DataProvider";
 
 const RequisitionDetailsForm: React.FC<{
   handleTab: (n: PageNumbers) => void;
 }> = ({ handleTab }) => {
+  const dataContext = useData();
+
   const {
     handleChange,
     errors,
@@ -39,9 +42,30 @@ const RequisitionDetailsForm: React.FC<{
       gender: Yup.string().required("Gender is required"),
     }),
     onSubmit: (values) => {
-      handleTab(1);
+      if (dataContext) {
+        const { state, setState } = dataContext;
+        setState((prevState: any) => ({
+          ...prevState,
+          requisitionDetails: {
+            ...prevState.requisitionDetails,
+            requisitionTitle: values.requisitionTitle,
+            noOfOpenings: values.noOfOpenings,
+            urgency: values.urgency,
+            gender: values.gender,
+          }
+        }))
+        handleTab(1);
+        console.log("state", state);
+      }
+      
     },
   });
+
+  
+
+  if (!dataContext) {
+    return <div>Error: Data context not available</div>
+  }
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>

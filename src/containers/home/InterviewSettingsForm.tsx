@@ -4,15 +4,19 @@ import FormSelect from "../../components/formComponents/FormSelect";
 import { useFormik } from "formik";
 import { PageNumbers } from "../../interface/home";
 import { IInterViewSettings } from "../../interface/forms";
+import * as Yup from "yup";
 import {
   interviewDurationOptions,
   interviewLanguageOptions,
   interviewModeOptions,
 } from "./constants";
+import { useData } from "./DataProvider";
 
 const InterviewDetailsForm: React.FC<{
   handleTab: (n: PageNumbers) => void;
 }> = ({ handleTab }) => {
+  const dataContext = useData();
+
   const {
     errors,
     touched,
@@ -26,11 +30,32 @@ const InterviewDetailsForm: React.FC<{
       interviewDuration: "",
       interviewLanguage: "",
     },
+    validationSchema: Yup.object().shape({
+      interviewMode: Yup.string().required("Interview Mode is required"),
+      interviewDuration: Yup.string().required("Interview Duration is required"),
+      interviewLanguage: Yup.string().required("Interview Language is required"),
+    }),
     onSubmit: (values) => {
-      console.log({ values });
-      alert("Form successfully submitted");
+      if (dataContext) {
+        const { state, setState } = dataContext;
+        setState((prevState: any) => ({
+          ...prevState,
+          interviewSettings: {
+            ...prevState.interviewSettings,
+            interviewDuration: values.interviewDuration,
+            interviewLanguage: values.interviewLanguage,
+            interviewMode: values.interviewMode,
+          }
+        }))
+        console.log({ values });
+        alert("Form successfully submitted");
+      }
     },
   });
+
+  if (!dataContext) {
+    return <div>Error: Data context not available</div>
+  }
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>
