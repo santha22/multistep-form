@@ -16,6 +16,14 @@ const InterviewDetailsForm: React.FC<{
   handleTab: (n: PageNumbers) => void;
 }> = ({ handleTab }) => {
   const dataContext = useData();
+  
+
+  if (!dataContext) {
+    return <div>Error: Data context not available</div>
+  }
+
+
+  const { state, setState } = dataContext;
 
   const {
     errors,
@@ -37,7 +45,6 @@ const InterviewDetailsForm: React.FC<{
     }),
     onSubmit: (values) => {
       if (dataContext) {
-        const { state, setState } = dataContext;
         setState((prevState: any) => ({
           ...prevState,
           interviewSettings: {
@@ -53,9 +60,19 @@ const InterviewDetailsForm: React.FC<{
     },
   });
 
-  if (!dataContext) {
-    return <div>Error: Data context not available</div>
+  const handleRealTimeSelect = (field: string, selectedOption: any) => {
+    const value = selectedOption.value;
+    setFieldValue(field, value);
+    setState((prevState: any) => ({
+      ...prevState,
+      interviewSettings: {
+        ...prevState.interviewSettings,
+        [field]: value,
+      }
+    }))
   }
+
+  
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>
@@ -65,8 +82,8 @@ const InterviewDetailsForm: React.FC<{
           placeholder="Select interview mode"
           name="interviewMode"
           options={interviewModeOptions}
-          onChange={setFieldValue}
-          onBlur={setFieldTouched}
+          onChange={(option: any) => handleRealTimeSelect("interviewMode", option)}
+          onBlur={() => setFieldTouched("interviewMode", true)}
           value={values?.interviewMode}
           error={errors?.interviewMode}
           touched={touched?.interviewMode}
@@ -76,8 +93,8 @@ const InterviewDetailsForm: React.FC<{
           placeholder="Select interview duration"
           name="interviewDuration"
           options={interviewDurationOptions}
-          onChange={setFieldValue}
-          onBlur={setFieldTouched}
+          onChange={(option: any) => handleRealTimeSelect("interviewDuration", option)}
+          onBlur={() => setFieldTouched("interviewDuration", true)}
           value={values?.interviewDuration}
           error={errors?.interviewDuration}
           touched={touched?.interviewDuration}
@@ -87,8 +104,8 @@ const InterviewDetailsForm: React.FC<{
           name="interviewLanguage"
           placeholder="Select interview language"
           options={interviewLanguageOptions}
-          onChange={setFieldValue}
-          onBlur={setFieldTouched}
+          onChange={(option: any)  => handleRealTimeSelect("interviewLanguage", option)}
+          onBlur={() => setFieldTouched("interviewLanguage", true)}
           error={errors.interviewLanguage}
           touched={touched.interviewLanguage}
           value={values.interviewLanguage}

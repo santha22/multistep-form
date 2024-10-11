@@ -14,6 +14,12 @@ const RequisitionDetailsForm: React.FC<{
 }> = ({ handleTab }) => {
   const dataContext = useData();
 
+  if (!dataContext) {
+    return <div>Error: Data context not available</div>
+  }
+
+  const { state, setState } = dataContext;
+  
   const {
     handleChange,
     errors,
@@ -26,10 +32,10 @@ const RequisitionDetailsForm: React.FC<{
     isValid,
   } = useFormik<IRequisitionDetails>({
     initialValues: {
-      requisitionTitle: "",
-      noOfOpenings: 0,
-      urgency: "",
-      gender: "",
+      requisitionTitle: dataContext?.state?.requisitionDetails?.requisitionTitle || "",
+      noOfOpenings: dataContext?.state?.requisitionDetails?.noOfOpenings || 0,
+      urgency: dataContext?.state.requisitionDetails?.urgency || "",
+      gender: dataContext?.state.requisitionDetails?.gender || "",
     },
     validationSchema: Yup.object().shape({
       requisitionTitle: Yup.string().required("Requisition title is required"),
@@ -43,16 +49,9 @@ const RequisitionDetailsForm: React.FC<{
     }),
     onSubmit: (values) => {
       if (dataContext) {
-        const { state, setState } = dataContext;
         setState((prevState: any) => ({
           ...prevState,
-          requisitionDetails: {
-            ...prevState.requisitionDetails,
-            requisitionTitle: values.requisitionTitle,
-            noOfOpenings: values.noOfOpenings,
-            urgency: values.urgency,
-            gender: values.gender,
-          }
+          requisitionDetails: values,
         }))
         handleTab(1);
         console.log("state", state);
@@ -61,11 +60,30 @@ const RequisitionDetailsForm: React.FC<{
     },
   });
 
-  
+  const handleRealTimeChange = (e: React.ChangeEvent<any>) => {
+    handleChange(e);
+    setState((prevState: any) => ({
+      ...prevState,
+      requisitionDetails: {
+        ...prevState.requisitionDetails,
+        [e.target.name]: e.target.value,
+      },
+    }));
+  };
 
-  if (!dataContext) {
-    return <div>Error: Data context not available</div>
+  const handleRealTimeSelect = (field: string, selectedOption: any) => {
+    const value = selectedOption.value;
+    setFieldValue(field, value);
+    setState((prevState: any) => ({
+      ...prevState,
+      requisitionDetails: {
+        ...prevState.requisitionDetails,
+        [field]: value,
+      }
+    }))
   }
+
+  
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>
@@ -74,7 +92,7 @@ const RequisitionDetailsForm: React.FC<{
           label="Requisition Title"
           placeholder="Enter requisition title"
           name="requisitionTitle"
-          onChange={handleChange}
+          onChange={handleRealTimeChange}
           onBlur={handleBlur}
           value={values?.requisitionTitle}
           error={errors?.requisitionTitle}
@@ -84,7 +102,7 @@ const RequisitionDetailsForm: React.FC<{
           label="Number of openings"
           placeholder="Enter number of openings"
           name="noOfOpenings"
-          onChange={handleChange}
+          onChange={handleRealTimeChange}
           onBlur={handleBlur}
           value={values?.noOfOpenings}
           error={errors?.noOfOpenings}
@@ -95,8 +113,8 @@ const RequisitionDetailsForm: React.FC<{
           name="gender"
           placeholder="Select gender"
           options={genderOptions}
-          onChange={setFieldValue}
-          onBlur={setFieldTouched}
+          onChange={(option: any) => handleRealTimeSelect("gender", option)}
+          onBlur={() => setFieldTouched("gender", true)}
           error={errors.gender}
           touched={touched.gender}
           value={values.gender}
@@ -106,8 +124,8 @@ const RequisitionDetailsForm: React.FC<{
           name="urgency"
           placeholder="Select urgency"
           options={urgencyOptions}
-          onChange={setFieldValue}
-          onBlur={setFieldTouched}
+          onChange={(option: any) => handleRealTimeSelect("urgency", option)}
+          onBlur={() => setFieldTouched("urgency", true)}
           error={errors.urgency}
           touched={touched.urgency}
           value={values.urgency}
