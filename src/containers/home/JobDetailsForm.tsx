@@ -12,14 +12,7 @@ const JobDetailsForm: React.FC<{
 }> = ({ handleTab }) => {
   const dataContext = useData();
   
-  if (!dataContext) {
-    return <div>Error: Data context not available</div>
-  }
-
-  const { state, setState } = dataContext;
-
-  const { handleChange, errors, touched, handleBlur, handleSubmit, values } =
-    useFormik<IJobDetails>({
+  const { handleChange, errors, touched, handleBlur, handleSubmit, values } = useFormik<IJobDetails>({
       initialValues: {
         jobTitle: "",
         jobDetails: "",
@@ -33,7 +26,7 @@ const JobDetailsForm: React.FC<{
       }),
       onSubmit: (values) => {
         if (dataContext) {
-          setState((prevState: any) => ({
+          dataContext.setState((prevState: any) => ({
             ...prevState,
             jobDetails: values,
           }))
@@ -41,19 +34,27 @@ const JobDetailsForm: React.FC<{
         }
       },
     });
-
+    
 
     const handleRealTimeChange = (e: React.ChangeEvent<any>) => {
       handleChange(e);
-      setState((prevState: any) => ({
-        ...prevState,
-        jobDetails: {
-          ...prevState.jobDetails,
-          [e.target.name]: e.target.value,
-        },
-      }));
+      if (dataContext) {
+        dataContext.setState((prevState: any) => ({
+          ...prevState,
+          jobDetails: {
+            ...prevState.jobDetails,
+            [e.target.name]: e.target.value,
+          },
+        }));
+      }
+      
     };
     
+
+  if (!dataContext) {
+    return <div>Error: Data context not available</div>
+  }
+
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>

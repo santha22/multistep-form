@@ -18,12 +18,9 @@ const InterviewDetailsForm: React.FC<{
   const dataContext = useData();
   
 
-  if (!dataContext) {
-    return <div>Error: Data context not available</div>
-  }
+  
 
 
-  const { state, setState } = dataContext;
 
   const {
     errors,
@@ -45,14 +42,9 @@ const InterviewDetailsForm: React.FC<{
     }),
     onSubmit: (values) => {
       if (dataContext) {
-        setState((prevState: any) => ({
+        dataContext.setState((prevState: any) => ({
           ...prevState,
-          interviewSettings: {
-            ...prevState.interviewSettings,
-            interviewDuration: values.interviewDuration,
-            interviewLanguage: values.interviewLanguage,
-            interviewMode: values.interviewMode,
-          }
+          interviewSettings: values,
         }))
         console.log({ values });
         alert("Form successfully submitted");
@@ -63,16 +55,20 @@ const InterviewDetailsForm: React.FC<{
   const handleRealTimeSelect = (field: string, selectedOption: any) => {
     const value = selectedOption.value;
     setFieldValue(field, value);
-    setState((prevState: any) => ({
-      ...prevState,
-      interviewSettings: {
-        ...prevState.interviewSettings,
-        [field]: value,
-      }
-    }))
+    if (dataContext) {
+      dataContext.setState((prevState: any) => ({
+        ...prevState,
+        interviewSettings: {
+          ...prevState.interviewSettings,
+          [field]: value,
+        }
+      }))
+    }
   }
 
-  
+  if (!dataContext) {
+    return <div>Error: Data context not available</div>
+  }
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>

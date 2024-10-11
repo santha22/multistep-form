@@ -14,11 +14,6 @@ const RequisitionDetailsForm: React.FC<{
 }> = ({ handleTab }) => {
   const dataContext = useData();
 
-  if (!dataContext) {
-    return <div>Error: Data context not available</div>
-  }
-
-  const { state, setState } = dataContext;
   
   const {
     handleChange,
@@ -49,12 +44,12 @@ const RequisitionDetailsForm: React.FC<{
     }),
     onSubmit: (values) => {
       if (dataContext) {
-        setState((prevState: any) => ({
+        dataContext.setState((prevState: any) => ({
           ...prevState,
           requisitionDetails: values,
         }))
         handleTab(1);
-        console.log("state", state);
+        console.log("state", dataContext.state);
       }
       
     },
@@ -62,28 +57,36 @@ const RequisitionDetailsForm: React.FC<{
 
   const handleRealTimeChange = (e: React.ChangeEvent<any>) => {
     handleChange(e);
-    setState((prevState: any) => ({
-      ...prevState,
-      requisitionDetails: {
-        ...prevState.requisitionDetails,
-        [e.target.name]: e.target.value,
-      },
-    }));
+    if (dataContext) {
+      dataContext.setState((prevState: any) => ({
+        ...prevState,
+        requisitionDetails: {
+          ...prevState.requisitionDetails,
+          [e.target.name]: e.target.value,
+        },
+      }));
+    }
+    
   };
 
   const handleRealTimeSelect = (field: string, selectedOption: any) => {
     const value = selectedOption.value;
     setFieldValue(field, value);
-    setState((prevState: any) => ({
-      ...prevState,
-      requisitionDetails: {
-        ...prevState.requisitionDetails,
-        [field]: value,
-      }
-    }))
+    if (dataContext) {
+      dataContext.setState((prevState: any) => ({
+        ...prevState,
+        requisitionDetails: {
+          ...prevState.requisitionDetails,
+          [field]: value,
+        }
+      }))
+    }
+    
   }
 
-  
+  if (!dataContext) {
+    return <div>Error: Data context not available</div>
+  }
 
   return (
     <Box width="100%" as="form" onSubmit={handleSubmit as any}>
